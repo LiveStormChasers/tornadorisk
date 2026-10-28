@@ -56,6 +56,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .status.err{border-color:#7a2a2a;color:#f0b4b4}
 .tiers{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7;margin:2px 0 8px}
 .tiers i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+details>summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;padding:6px 0}
+details>summary:hover{color:var(--text)}
 .hint{font-size:12px;color:var(--muted);margin:-2px 0 10px}
 .hint a{color:#8fb8ff}
 .chk{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -113,6 +115,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
     <div class="row"><label for="month">Month</label><select id="month"></select></div>
     <div class="row"><label>Period</label>
       <div class="seg" id="periodSeg"><button data-v="full">Whole month</button><button data-v="early">Early (1–15)</button><button data-v="late">Late (16–end)</button></div></div>
+    <details id="fine"><summary>Fine-tune (optional)</summary>
+    <p class="hint" style="margin-top:8px">You can leave these alone. The defaults give the smooth TV look.</p>
     <div class="row"><label>Tier cutoffs</label>
       <div class="seg" id="modeSeg"><button data-v="rel" aria-pressed="true">Relative to peak</button><button data-v="abs" aria-pressed="false">Fixed chance</button></div></div>
     <div class="row"><label for="t1">Possible</label><input id="t1" type="range"><span class="v" id="t1v"></span></div>
@@ -123,7 +127,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
       <div class="seg" id="shapeSeg"><button data-v="broadcast">Broadcast (smooth)</button><button data-v="detailed">Detailed</button></div></div>
     <div class="row"><label for="sigma">Edge smoothing</label><input id="sigma" type="range" min="25" max="220" step="5"><span class="v" id="sigmav"></span></div>
     <div class="row"><label for="minArea">Drop small blobs</label><input id="minArea" type="range" min="0" max="120" step="5"><span class="v" id="minAreav"></span></div>
-    <p class="hint">Shading is the share of years with at least one tornado within 25 miles during the month. Smoothing is in miles; blobs are in thousands of square miles.</p>
+    <p class="hint">The numbers above are how often a tornado happened within 25 miles in that month (for example, 15% = 1 year in 7). Smoothing rounds off the edges; "drop small blobs" removes tiny specks.</p>
+    </details>
   </section>
 
   <section class="sec">
@@ -143,6 +148,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
       <div class="seg" id="headSeg"><button data-v="banner">LSC banner</button><button data-v="card">Top card</button><button data-v="corner">Corner card</button></div></div>
     <div class="row"><label for="palette">Color set</label>
       <select id="palette"><option value="lsc">Reds</option><option value="magenta">Reds with magenta</option><option value="purple">Red, purple, white</option><option value="custom">Custom</option></select></div>
+    <div class="row"><label for="headScale">Header size</label><input id="headScale" type="range" min="40" max="140" step="5"><span class="v" id="headScalev"></span></div>
     <div class="row"><label>Tier colors</label><input id="c1" type="color"><input id="c2" type="color"><input id="c3" type="color"><button id="colorReset" style="padding:5px 9px">Reset</button></div>
     <div class="row"><label for="opac">Tier opacity</label><input id="opac" type="range" min="40" max="100"><span class="v" id="opacv"></span></div>
     <div class="row"><label>Framing</label><div class="btns" style="flex:1"><button data-view="us">Full US</button><button data-view="east">Central &amp; East</button><button data-view="fit">Auto-fit risk area</button></div></div>
@@ -242,7 +248,7 @@ const DEFAULTS={
   period:"full", tierNames:["Possible","Greater","Greatest"], tierLab:"off", palette:"lsc",
   title:"Average Tornado Risk Area", monthText:"", website:"LiveStormChasers.com", credit:true,
   lab:"lsc", labScale:100, cityMode:"auto", maxLab:9, manual:[], extraCities:[],
-  logo:null, logoSize:300, size:"1920x1080", cw:1600, ch:900,
+  logo:null, logoSize:300, headScale:100, size:"1920x1080", cw:1600, ch:900,
   cam:{center:[-91,36.8],zoomRef:4.45,bearing:0,pitch:0}
 };
 let S=load("trm-state",{});
@@ -531,7 +537,7 @@ function updateTierInfo(){
   const names=S.tierNames;
   const p=v=>(v*100).toFixed(v<0.1?1:0)+"%";
   let h=names.map((n,k)=>`<div><i style="background:${S.colors[k]}"></i>${n.padEnd(9," ")} ≥ ${p(G.thr[k])}${G.risk[k].length?"":"  (none)"}</div>`).join("");
-  h+=`<div style="margin-top:4px">Peak ${p(G.peak)} near ${nearestCity(G.peakAt)}</div>`;
+  h+=`<div style="margin-top:4px">Most active spot: near ${nearestCity(G.peakAt)}, ${p(G.peak)} of years</div>`;
   $("tierInfo").innerHTML=h;
 }
 
@@ -661,7 +667,7 @@ function drawHeader(ctx){
   const {VW}=virt();
   if(!measureCtx) measureCtx=document.createElement("canvas").getContext("2d");
   const nat=drawHeaderRaw(measureCtx), right=Math.max(...nat.map(b=>b[0]+b[2]));
-  const f=Math.min(1,(VW-24)/right);
+  const f=Math.min((VW-24)/right,(S.headScale||100)/100);
   ctx.save(); ctx.scale(f,f); const boxes=drawHeaderRaw(ctx); ctx.restore();
   return boxes.map(b=>b.map(v=>v*f));
 }
@@ -869,6 +875,7 @@ function bind(){
   rng("minArea","minArea",v=>v?v+"k":"off",rebuildSoon);
   rng("opac","opac",v=>v+"%",applyLook);
   rng("labScale","labScale",v=>v+"%",scheduleOverlay);
+  rng("headScale","headScale",v=>v+"%",()=>{scheduleOverlay();if(autoFit)setView("fit",true)});
   rng("maxLab","maxLab",v=>v,scheduleOverlay);
   rng("logoSize","logoSize",v=>v,scheduleOverlay);
   const sz=$("size"); sz.innerHTML=SIZES.map(([v,l])=>`<option value="${v}">${l}</option>`).join(""); sz.value=S.size;
