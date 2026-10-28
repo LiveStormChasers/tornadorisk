@@ -51,17 +51,24 @@ How the numbers are made
                 its whole path, not just where it touched down.
     value       years with a hit divided by years in the period. A value of
                 0.33 means one year in three.
-    period      last 30 complete years by default. 1991-2020 normals and the
-                last 20 years are offered. A year that ends before December
+    period      the full record, 1950 to the last complete year, by default.
+                The last 30 years, 1991-2020 normals and the last 20 years
+                are offered. A year that ends before December
                 in the file is treated as incomplete and left out.
     halves      days 1-15 and 16-end are binned separately, so "Early April"
                 is its own climatology, not half of April's.
     smoothing   Gaussian, 110 miles by default, run as a normalised
                 convolution against a land mask so coastal values are not
                 dragged down by ocean zeros
-    tiers       Possible, Greater and Greatest, cut relative to the month's
-                peak (10, 34 and 62 percent of it by default) or at fixed
-                chances. The panel shows the real percentages behind each.
+    tiers       "TWC style" by default, calibrated against all twelve of
+                The Weather Channel's 2025 monthly maps:
+                  Possible  fixed 2 percent (1 year in 50)
+                  Greater   49 percent of the month's peak
+                  Greatest  78 percent of the month's peak
+                Greater is drawn in Feb-Sep, Nov and Dec; Greatest in
+                Mar-Jun, the months TWC shows them. "Same all year" (fixed
+                chances) and "Relative" (all three tiers every month) remain
+                as options. The panel shows the real percentages behind each.
     clipping    contours are intersected with the contiguous US outline and
                 the Great Lakes are cut out with Natural Earth 1:50m lakes
 
@@ -81,8 +88,17 @@ Clipping risk areas to them paints Lake Michigan red. The lakes have to be
 subtracted separately, and drawn above the state lines so the borders that run
 through the water disappear.
 
-Relative tiers are what keep winter months usable. At fixed thresholds a
-December map has no Greatest tier at all, because the peak never reaches it.
+Which tiers appear in which month cannot be derived from the data alone. In
+the climatology January and February peak within a point of each other, and
+so do March and July, yet TWC gives February a Greater area and January none,
+and March a Greatest area and July none. No single rule, fixed or relative,
+reproduces all twelve maps, so the TWC months are written down as a table
+(`TWC_SEASON`). The extents are data-driven; only which tiers exist is fixed.
+
+The period matters as much as the cutoffs. Matched against TWC's maps, the
+full 1950-present record fits far better than the last 30 years: November's
+Possible area reaches Kansas City and leaves the Appalachian notch, as TWC's
+does, only on the full record.
 
 The PNG is composed in three passes: starfield, map canvas, overlay. The map
 canvas is grabbed inside a `render` callback after `triggerRepaint`, while the
