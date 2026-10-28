@@ -62,8 +62,14 @@ details>summary:hover{color:var(--text)}
 .hint a{color:#8fb8ff}
 .chk{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .chk input{accent-color:var(--accent)}
-#cityList{max-height:180px;overflow-y:auto;border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:var(--raise);columns:2;column-gap:10px;font-size:12.5px}
-#cityList label{display:flex;gap:6px;align-items:center;break-inside:avoid;padding:1px 0}
+#cityList{max-height:180px;overflow-y:auto;overflow-x:hidden;border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:var(--raise);display:grid;grid-template-columns:1fr 1fr;column-gap:10px;font-size:12.5px}
+#cityList label{display:flex;gap:6px;align-items:center;padding:1px 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#geoResults{display:grid;gap:4px;margin-bottom:8px}
+#geoResults button{text-align:left;font-weight:500;font-size:12.5px;padding:6px 9px}
+#myPlaces{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--raise);border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12.5px}
+.chip button{border:0;background:transparent;padding:0 6px;font-size:14px;line-height:1;color:var(--muted)}
+.chip button:hover{color:var(--text)}
 #cityList label.on{color:var(--text)}#cityList label.off{color:var(--muted)}
 #main{flex:1;min-width:0;height:100%;display:flex;align-items:center;justify-content:center;padding:18px;position:relative}
 #stage{position:relative;flex:none;max-width:100%;background:#03050a;box-shadow:0 10px 40px rgba(0,0,0,.5);overflow:hidden}
@@ -134,7 +140,7 @@ details>summary:hover{color:var(--text)}
   <section class="sec">
     <h2>Size</h2>
     <div class="row"><label for="size">Format</label><select id="size"></select></div>
-    <div class="row" id="customRow"><label>Width × height</label><input id="cw" type="number" min="320" max="4096"> <span>×</span> <input id="ch" type="number" min="320" max="4096"></div>
+    <div class="row" id="customRow" hidden><label>Width × height</label><input id="cw" type="number" min="320" max="4096"> <span>×</span> <input id="ch" type="number" min="320" max="4096"></div>
   </section>
 
   <section class="sec">
@@ -148,10 +154,12 @@ details>summary:hover{color:var(--text)}
       <div class="seg" id="headSeg"><button data-v="banner">LSC banner</button><button data-v="card">Top card</button><button data-v="corner">Corner card</button></div></div>
     <div class="row"><label for="palette">Color set</label>
       <select id="palette"><option value="lsc">Reds</option><option value="magenta">Reds with magenta</option><option value="purple">Red, purple, white</option><option value="custom">Custom</option></select></div>
+    <div class="row"><label>State lines</label><input id="stateC" type="color" title="State line color"><label style="flex:0 1 auto">Coast &amp; borders</label><input id="coastC" type="color" title="Coastline and country border color"><button id="lineReset" style="padding:5px 9px">Reset</button></div>
+    <div class="row"><label for="lineW">Line thickness</label><input id="lineW" type="range" min="40" max="300" step="10"><span class="v" id="lineWv"></span></div>
     <div class="row"><label for="headScale">Header size</label><input id="headScale" type="range" min="40" max="140" step="5"><span class="v" id="headScalev"></span></div>
     <div class="row"><label>Tier colors</label><input id="c1" type="color"><input id="c2" type="color"><input id="c3" type="color"><button id="colorReset" style="padding:5px 9px">Reset</button></div>
     <div class="row"><label for="opac">Tier opacity</label><input id="opac" type="range" min="40" max="100"><span class="v" id="opacv"></span></div>
-    <div class="row"><label>Framing</label><div class="btns" style="flex:1"><button data-view="us">Full US</button><button data-view="east">Central &amp; East</button><button data-view="fit">Auto-fit risk area</button></div></div>
+    <div class="row"><label style="flex-basis:100%">Framing</label><div class="btns" style="flex:1 1 100%"><button data-view="us">Full US</button><button data-view="east">Central &amp; East</button><button data-view="fit">Auto-fit risk area</button></div></div>
     <p class="hint">Drag to pan, scroll to zoom, right-drag to rotate.</p>
   </section>
 
@@ -163,7 +171,7 @@ details>summary:hover{color:var(--text)}
     <div class="row"><label>Tier names</label><input id="n1" type="text" style="flex:1 1 70px;width:auto"><input id="n2" type="text" style="flex:1 1 70px;width:auto"><input id="n3" type="text" style="flex:1 1 70px;width:auto"></div>
     <div class="row"><label>Names on map</label>
       <div class="seg" id="tierLabSeg"><button data-v="off">Off</button><button data-v="text">Big text</button><button data-v="boxed">Boxed</button></div></div>
-    <div class="chk"><input id="credit" type="checkbox"><label for="credit">Data source line at the bottom</label></div>
+    <div class="chk"><input id="credit" type="checkbox"><label for="credit">Footer bar (data source + "Custom mapping by" credit)</label></div>
     <div class="row"><label>City labels</label>
       <div class="seg" id="labSeg"><button data-v="dark">Black</button><button data-v="light">Light</button><button data-v="lsc">LSC box</button></div></div>
     <div class="row"><label for="labScale">Label size</label><input id="labScale" type="range" min="60" max="150"><span class="v" id="labScalev"></span></div>
@@ -171,9 +179,10 @@ details>summary:hover{color:var(--text)}
       <div class="seg" id="cityModeSeg"><button data-v="auto">Auto in risk area</button><button data-v="manual">Manual</button></div></div>
     <div class="row" id="maxLabRow"><label for="maxLab">Max cities</label><input id="maxLab" type="range" min="3" max="30"><span class="v" id="maxLabv"></span></div>
     <div id="cityList"></div>
-    <div class="row" style="margin-top:8px"><input id="addCity" type="text" placeholder="Add city: Name, lat, lon" style="flex:1"><button id="addCityBtn">Add</button></div>
-    <div class="row"><label>Logo (PNG)</label><button id="logoBtn">Choose…</button><button id="logoClear">Remove</button><input id="logoIn" type="file" accept="image/*" hidden></div>
-    <div class="row"><label for="logoSize">Logo size</label><input id="logoSize" type="range" min="120" max="520"><span class="v" id="logoSizev"></span></div>
+    <div class="row" style="margin-top:10px"><label for="addCity" style="flex-basis:100%">Add your own place</label><input id="addCity" type="text" placeholder="Town name, e.g. Springfield, MO" style="flex:1"><button id="addCityBtn">Find</button></div>
+    <div id="geoResults"></div>
+    <div id="myPlaces"></div>
+    <p class="hint">Places you add always show on the map. Pick the right match from the list after you search.</p>
   </section>
 
   <section class="sec">
@@ -209,6 +218,7 @@ const DEF_COLORS=["#d40a14","#99000d","#5b0008"];
 const GIBS="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg";
 const TOPO_US="https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json";
 const TOPO_WORLD="https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json";
+const LAKES_URL="https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson/ne_50m_lakes.geojson";
 // SPC serves its CSV with open CORS, so the page can pull the newest file directly.
 const AUTO_URLS=(()=>{const u=["./tornadoes.csv"],y=new Date().getFullYear();
   for(let k=y;k>=2023;k--) u.push("https://www.spc.noaa.gov/wcm/data/1950-"+k+"_actual_tornadoes.csv");return u})();
@@ -248,7 +258,7 @@ const DEFAULTS={
   period:"full", tierNames:["Possible","Greater","Greatest"], tierLab:"off", palette:"lsc",
   title:"Average Tornado Risk Area", monthText:"", website:"LiveStormChasers.com", credit:true,
   lab:"lsc", labScale:100, cityMode:"auto", maxLab:9, manual:[], extraCities:[],
-  logo:null, logoSize:300, headScale:100, size:"1920x1080", cw:1600, ch:900,
+  logo:null, logoSize:300, headScale:100, stateColor:null, coastColor:null, lineW:100, size:"1920x1080", cw:1600, ch:900,
   cam:{center:[-91,36.8],zoomRef:4.45,bearing:0,pitch:0}
 };
 let S=load("trm-state",{});
@@ -408,7 +418,14 @@ function busy(on){$("busy").hidden=!on}
 
 function fetchT(url,ms=15000,opts={}){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);return fetch(url,{...opts,signal:c.signal}).finally(()=>clearTimeout(t))}
 async function loadGeo(){
-  const [us,world]=await Promise.all([fetchT(TOPO_US).then(r=>r.json()),fetchT(TOPO_WORLD).then(r=>r.json())]);
+  const [us,world,lakesRaw]=await Promise.all([fetchT(TOPO_US).then(r=>r.json()),fetchT(TOPO_WORLD).then(r=>r.json()),
+    fetchT(LAKES_URL,25000).then(r=>r.json()).catch(()=>null)]);
+  // Lakes (Natural Earth): drawn as water, and cut out of the risk areas
+  const lakeFeats=(lakesRaw?.features||[]).filter(f=>{const b=mpBounds(f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates);return b[2]>-135&&b[0]<-55&&b[3]>20&&b[1]<60});
+  const lakes={type:"FeatureCollection",features:lakeFeats};
+  const lakeClip=[];
+  for(const f of lakeFeats){const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;for(const p of ps){const b=mpBounds([p]);if(b[0]>-128&&b[2]<-64&&b[1]>23&&b[3]<50.5&&ringAreaKm2(p[0])>1500)lakeClip.push(p)}}
+  G.lakeClip=lakeClip;
   const land=topojson.feature(world,world.objects.land);
   const coast=topojson.mesh(world,world.objects.land);
   const borders=topojson.mesh(world,world.objects.countries,(a,b)=>a!==b);
@@ -418,14 +435,17 @@ async function loadGeo(){
   let polys=usa.geometry.type==="Polygon"?[usa.geometry.coordinates]:usa.geometry.coordinates;
   polys=polys.filter(p=>{const b=mpBounds([p]);return b[0]>-128&&b[2]<-64&&b[1]>23&&b[3]<50.5});
   G.clip=polys;
-  G.geo={land,coast,borders,states};
-  G.mask=rasterMask(polys);
+  G.geo={land,coast,borders,states,lakes};
+  G.mask=rasterMask(polys,lakeClip);
 }
-function rasterMask(mp){
+function rasterMask(mp,holes=[]){
   const {nx,ny,lon0,lat0,d}=GRID, cv=document.createElement("canvas"); cv.width=nx; cv.height=ny;
   const x=cv.getContext("2d"); x.fillStyle="#fff"; x.beginPath();
   for(const poly of mp) for(const r of poly){r.forEach(([lo,la],k)=>{const px=(lo-lon0)/d+0.5,py=(la-lat0)/d+0.5;k?x.lineTo(px,py):x.moveTo(px,py)});x.closePath()}
   x.fill("evenodd");
+  if(holes.length){x.globalCompositeOperation="destination-out";x.beginPath();
+    for(const poly of holes) for(const r of poly){r.forEach(([lo,la],k)=>{const px=(lo-lon0)/d+0.5,py=(la-lat0)/d+0.5;k?x.lineTo(px,py):x.moveTo(px,py)});x.closePath()}
+    x.fill("evenodd");x.globalCompositeOperation="source-over"}
   const px=x.getImageData(0,0,nx,ny).data, m=new Uint8Array(nx*ny);
   for(let c=0;c<nx*ny;c++) m[c]=px[c*4+3]>100?1:0;
   return m;
@@ -496,6 +516,7 @@ async function rebuild(){
     let mp=g.coordinates.map(poly=>poly.map(r=>r.map(([x,y])=>[lon0+(x-0.5)*d,lat0+(y-0.5)*d])));
     if(!mp.length) return [];
     try{mp=polygonClipping.intersection(mp,G.clip)}catch(e){console.warn("clip failed",e)}
+    if(G.lakeClip&&G.lakeClip.length){try{mp=polygonClipping.difference(mp,G.lakeClip)}catch(e){console.warn("lake cut failed",e)}}
     mp=filterSmall(mp,minKm2);
     if(S.shape==="broadcast") mp=broadcastShape(mp);
     return mp;
@@ -556,13 +577,16 @@ function initMap(){
     map.addSource("coast",{type:"geojson",data:G.geo.coast});
     map.addSource("borders",{type:"geojson",data:G.geo.borders});
     map.addSource("states",{type:"geojson",data:G.geo.states});
+    map.addSource("lakes",{type:"geojson",data:G.geo.lakes});
     for(let k=1;k<=3;k++) map.addSource("risk"+k,{type:"geojson",data:E});
     map.addLayer({id:"sat",type:"raster",source:"gibs",paint:{"raster-saturation":0.18,"raster-contrast":0.08,"raster-fade-duration":0}});
     map.addLayer({id:"land",type:"fill",source:"land",paint:{"fill-color":"#d4d5d8"}});
     for(let k=1;k<=3;k++) map.addLayer({id:"risk"+k,type:"fill",source:"risk"+k,paint:{"fill-color":S.colors[k-1],"fill-antialias":true}});
     map.addLayer({id:"states",type:"line",source:"states",layout:{"line-join":"round"},paint:{"line-color":"#000","line-width":1.4}});
     map.addLayer({id:"borders",type:"line",source:"borders",layout:{"line-join":"round"},paint:{"line-color":"#000","line-width":1.6}});
+    map.addLayer({id:"lakesFill",type:"fill",source:"lakes",paint:{"fill-color":"#a7abb1"}});
     map.addLayer({id:"coast",type:"line",source:"coast",layout:{"line-join":"round"},paint:{"line-color":"#000","line-width":1.6}});
+    map.addLayer({id:"lakeLine",type:"line",source:"lakes",layout:{"line-join":"round"},paint:{"line-color":"#000","line-width":1.2}});
     mapReady=true; applyLook(); pushRisk();
   });
   map.on("render",scheduleOverlay);
@@ -577,15 +601,19 @@ function camZoom(){return S.cam.zoomRef+zoomShift()}
 function applyLook(){
   if(!mapReady) return;
   const L={
-    sat:{bg:"#0b2a4a",sat:"visible",land:"none",line:"#050505",lw:[1.3,1.6,1.4]},
-    gray:{bg:"#a7abb1",sat:"none",land:"visible",landC:"#d6d7da",line:"#8d9198",lw:[1.1,1.4,1.1]},
-    dark:{bg:"#0c1015",sat:"none",land:"visible",landC:"#262b33",line:"#56606c",lw:[1.0,1.3,1.0]}
+    sat:{bg:"#0b2a4a",sat:"visible",land:"none",line:"#050505",coast:"#050505",lw:[1.3,1.6,1.4]},
+    gray:{bg:"#a7abb1",sat:"none",land:"visible",landC:"#d6d7da",line:"#8d9198",coast:"#8d9198",lw:[1.1,1.4,1.1]},
+    dark:{bg:"#0c1015",sat:"none",land:"visible",landC:"#262b33",line:"#ffffff",coast:"#ffffff",lw:[1.1,1.4,1.2]}
   }[S.base];
   map.setPaintProperty("bg","background-color",L.bg);
   map.setLayoutProperty("sat","visibility",L.sat);
   map.setLayoutProperty("land","visibility",L.land);
   if(L.landC) map.setPaintProperty("land","fill-color",L.landC);
-  ["states","borders","coast"].forEach((id,k)=>{map.setPaintProperty(id,"line-color",L.line);map.setPaintProperty(id,"line-width",L.lw[k]*Math.max(.6,$("stage").clientWidth/1600))});
+  const stC=S.stateColor||L.line, coC=S.coastColor||L.coast, lwK=(S.lineW||100)/100;
+  ["states","borders","coast","lakeLine"].forEach((id,k)=>{map.setPaintProperty(id,"line-color",k===0?stC:coC);map.setPaintProperty(id,"line-width",L.lw[Math.min(k,2)]*lwK*Math.max(.6,$("stage").clientWidth/1600))});
+  if($("stateC")){$("stateC").value=stC;$("coastC").value=coC}
+  // flat styles paint lakes as water; on satellite the imagery already shows them
+  map.setPaintProperty("lakesFill","fill-color",L.bg); map.setPaintProperty("lakesFill","fill-opacity",S.base==="sat"?0:1);
   for(let k=1;k<=3;k++){map.setPaintProperty("risk"+k,"fill-color",S.colors[k-1]);map.setPaintProperty("risk"+k,"fill-opacity",S.opac/100)}
   try{map.setProjection({type:S.proj})}catch(e){}
   drawStars(); scheduleOverlay();
@@ -599,7 +627,8 @@ function setView(v,quick){
     const st=$("stage"), cw=st.clientWidth, ch=st.clientHeight, {VW}=virt(), u=cw/VW;
     if(!measureCtx) measureCtx=document.createElement("canvas").getContext("2d");
     const hb=drawHeader(measureCtx), headBottom=Math.max(...hb.map(x=>x[1]+x[3]))*u;
-    const pad={top:Math.min(ch*0.45,headBottom+ch*0.03),bottom:ch*0.07,left:cw*0.04,right:cw*0.04};
+    const footBottom=(S.credit&&G.data?(G.footerH||50):0)*u;
+    const pad={top:Math.min(ch*0.45,headBottom+ch*0.03),bottom:Math.max(ch*0.05,footBottom+ch*0.03),left:cw*0.04,right:cw*0.04};
     map.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:pad,duration:quick?0:600,bearing:0,pitch:0});
     return;
   }
@@ -646,8 +675,8 @@ function drawOverlayPreview(){
 }
 function rr(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else{ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}}
 function periodName(){return (S.period==="early"?"Early ":S.period==="late"?"Late ":"")+MONTHS[S.month]}
-const SIZES=[["1920x1080","Wide 16:9 · 1920×1080"],["1080x1350","Portrait 4:5 · 1080×1350"],["1152x1440","LSC portrait · 1152×1440"],["1080x1080","Square · 1080×1080"],["1080x1920","Story 9:16 · 1080×1920"],["custom","Custom size"]];
-function dims(){if(S.size==="custom")return [Math.max(320,Math.min(4096,S.cw|0)),Math.max(320,Math.min(4096,S.ch|0))];return S.size.split("x").map(Number)}
+const SIZES=[["1080x1350","Vertical 4:5 · 1080×1350"],["1920x1080","Landscape 16:9 · 1920×1080"]];
+function dims(){if(!SIZES.some(z=>z[0]===S.size))S.size="1920x1080";if(S.size==="custom")return [Math.max(320,Math.min(4096,S.cw|0)),Math.max(320,Math.min(4096,S.ch|0))];return S.size.split("x").map(Number)}
 // Overlay is laid out in virtual units: 1920 wide for landscape sizes, 1200 wide otherwise, so text stays readable on tall posts
 function virt(){const [w,h]=dims();const VW=w>=h*1.3?1920:1200;return {VW,VH:Math.round(VW*h/w)}}
 function monthLabel(){return S.monthText.trim()||periodName()}
@@ -738,7 +767,7 @@ function drawTierLabels(ctx,cssPerUnit,boxes){
     const w=ctx.measureText(t).width+(boxed?40:0), h=boxed?66:68;
     for(const ll of cands){
       const p=map.project(ll), x=p.x/cssPerUnit, y=p.y/cssPerUnit, b=[x-w/2,y-h/2,w,h];
-      const {VW,VH}=virt(); if(b[0]<20||b[0]+w>VW-20||b[1]<20||b[1]+h>VH-20||hit([b[0]-12,b[1]-10,w+24,h+20])) continue;
+      const {VW,VH}=virt(); if(b[0]<20||b[0]+w>VW-20||b[1]<20||b[1]+h>bottomEdge()||hit([b[0]-12,b[1]-10,w+24,h+20])) continue;
       if(boxed){
         ctx.fillStyle=S.colors[k]; ctx.fillRect(b[0],b[1],w,h); ctx.lineWidth=4; ctx.strokeStyle="#fff"; ctx.strokeRect(b[0],b[1],w,h);
         ctx.fillStyle=lum(S.colors[k])>0.7?"#111":"#fff"; ctx.fillText(t,x,y+2);
@@ -768,14 +797,16 @@ function pickCities(ctx,cssPerUnit,reserved){
   if(S.cityMode==="manual"){cand=allCities().filter(c=>S.manual.includes(c[0]))}
   else{
     const poss=G.risk[0];
-    cand=allCities().filter(c=>poss.length&&pip([c[2],c[1]],poss));
+    cand=BASE_CITIES.filter(c=>poss.length&&pip([c[2],c[1]],poss));
     const tierOf=c=>G.risk[2].length&&pip([c[2],c[1]],G.risk[2])?2:G.risk[1].length&&pip([c[2],c[1]],G.risk[1])?1:0;
     cand.sort((a,b)=>a[3]-b[3]||tierOf(b)-tierOf(a));
+    cand=S.extraCities.concat(cand);
   }
   for(const c of cand){
-    if(S.cityMode==="auto"&&out.length>=S.maxLab) break;
-    const xy=proj(c); if(xy[0]<20||xy[0]>VW-20||xy[1]<20||xy[1]>VH-20) continue;
-    const b=box(c,xy); if(S.cityMode==="auto"&&overlaps([b[0]-14,b[1]-10,b[2]+28,b[3]+20])) continue;
+    const mine=S.extraCities.includes(c);
+    if(S.cityMode==="auto"&&!mine&&out.length>=S.maxLab) continue;
+    const xy=proj(c); if(xy[0]<20||xy[0]>VW-20||xy[1]<20||xy[1]>bottomEdge()) continue;
+    const b=box(c,xy); if(S.cityMode==="auto"&&!mine&&overlaps([b[0]-14,b[1]-10,b[2]+28,b[3]+20])) continue;
     placed.push(b); out.push({c,b});
   }
   return out;
@@ -795,25 +826,49 @@ function drawCities(ctx,cssPerUnit,reserved){
   renderCityList();
 }
 let logoImg=null;
+// Footer bar: data source on the left, LSC credit on the right; dark or light to match the header
 function drawFooter(ctx){
-  const {VW,VH}=virt();
-  if(S.credit&&G.data){
-    const t=`Source: NOAA Storm Prediction Center tornado reports ${S.y0}–${S.y1}${+S.mag?`, EF${S.mag}+`:""}. Shading shows how often a tornado occurred within 25 miles during ${S.period==="full"?MONTHS[S.month]:periodName().toLowerCase().replace(/^(\w+) (\w)/,(m,a,b)=>a+" "+b.toUpperCase())}.`;
-    ctx.font="500 20px Figtree, sans-serif";
-    const maxW=VW-(logoImg?S.logoSize+90:S.head!=="banner"&&S.website.trim()?380:60), lines=[]; let cur="";
-    for(const wd of t.split(" ")){const tt=cur?cur+" "+wd:wd; if(ctx.measureText(tt).width>maxW&&cur){lines.push(cur);cur=wd}else cur=tt} if(cur)lines.push(cur);
-    const tw=Math.max(...lines.map(l=>ctx.measureText(l).width)), bh=12+lines.length*24, by=VH-12-bh;
-    ctx.fillStyle="rgba(10,12,16,.62)"; rr(ctx,14,by,tw+20,bh,6); ctx.fill();
-    ctx.fillStyle="rgba(255,255,255,.9)"; lines.forEach((l,i)=>ctx.fillText(l,24,by+29+i*24));
+  const {VW,VH}=virt(), C=S.colors, site=S.website.trim();
+  G.footerH=0;
+  if(!(S.credit&&G.data)){
+    if(logoImg){const w=S.logoSize,h=w*logoImg.height/logoImg.width;ctx.drawImage(logoImg,VW-w-34,VH-h-28,w,h)}
+    else if(site&&S.head!=="banner"){
+      ctx.font="700 30px Barlow, Figtree, sans-serif"; ctx.textAlign="right";
+      ctx.save(); ctx.shadowColor="rgba(0,0,0,.75)"; ctx.shadowBlur=8; ctx.fillStyle="#fff"; ctx.fillText(site,VW-34,VH-26); ctx.restore(); ctx.textAlign="left";
+    }
+    return;
   }
-  if(logoImg){
-    const w=S.logoSize,h=w*logoImg.height/logoImg.width;
-    ctx.drawImage(logoImg,VW-w-34,VH-h-28,w,h);
-  }else if(S.website.trim()&&S.head!=="banner"){
-    ctx.font="700 30px Barlow, Figtree, sans-serif"; ctx.textAlign="right";
-    ctx.save(); ctx.shadowColor="rgba(0,0,0,.75)"; ctx.shadowBlur=8; ctx.fillStyle="#fff"; ctx.fillText(S.website.trim(),VW-34,VH-26); ctx.restore(); ctx.textAlign="left";
+  const light=S.head!=="banner";
+  const bg=light?"rgba(246,242,236,.96)":"rgba(8,8,10,.92)", fg=light?"#2a2a2d":"#e9e9eb", dim=light?"#5d5d62":"#a9a9ae", strong=light?"#111":"#fff";
+  const when=S.period==="full"?MONTHS[S.month]:periodName();
+  const src=`NOAA Storm Prediction Center tornado reports  ·  ${S.y0}–${S.y1}  ·  ${when}${+S.mag?`  ·  EF${S.mag}+ only`:""}`;
+  const tagF="700 22px Barlow, Figtree, sans-serif", srcF="500 22px Figtree, sans-serif", byF="500 22px Figtree, sans-serif", siteF="700 29px Barlow, Figtree, sans-serif";
+  ctx.font=tagF; const tagW=ctx.measureText("DATA").width+26;
+  ctx.font=srcF; const srcW=ctx.measureText(src).width;
+  ctx.font=byF; const byW=ctx.measureText("Custom mapping by ").width;
+  ctx.font=siteF; const siteW=site?ctx.measureText(site).width:0;
+  const rightW=site?byW+siteW:0, padX=26, gap=40;
+  const oneRow=tagW+14+srcW+gap+rightW+padX*2<=VW;
+  const rowH=54, bh=oneRow?rowH:rowH*2-8, by=VH-bh;
+  ctx.fillStyle=bg; ctx.fillRect(0,by,VW,bh);
+  ctx.fillStyle=C[0]; ctx.fillRect(0,by,VW,4);
+  // left: red DATA tag + source
+  const r1=by+4+(rowH-4)/2;
+  ctx.textBaseline="middle";
+  ctx.fillStyle=C[0]; ctx.fillRect(padX,r1-16,tagW,32);
+  ctx.font=tagF; ctx.fillStyle="#fff"; ctx.fillText("DATA",padX+13,r1+1);
+  ctx.font=srcF; ctx.fillStyle=fg; ctx.fillText(src,padX+tagW+14,r1+1);
+  // right: custom mapping credit
+  if(site){
+    const r2=oneRow?r1:by+rowH-4+(rowH-4)/2, x0=oneRow?VW-padX-rightW:padX;
+    ctx.font=byF; ctx.fillStyle=dim; ctx.fillText("Custom mapping by ",x0,r2+1);
+    ctx.font=siteF; ctx.fillStyle=strong; ctx.fillText(site,x0+byW,r2+1);
   }
+  ctx.textBaseline="alphabetic";
+  if(logoImg){const w=S.logoSize,h=w*logoImg.height/logoImg.width;ctx.drawImage(logoImg,VW-w-24,by-h-16,w,h)}
+  G.footerH=bh;
 }
+function bottomEdge(){const {VH}=virt();return VH-(S.credit&&G.data?(G.footerH||50):0)-20}
 
 /* ============================== export ============================== */
 function waitIdle(){return new Promise(r=>{if(map.loaded()&&!map.isMoving()&&map.areTilesLoaded())setTimeout(r,60);else map.once("idle",()=>setTimeout(r,60))})}
@@ -848,6 +903,11 @@ function tierSliders(){
   [1,2,3].forEach(k=>{const el=$("t"+k);el.min=cfg.min;el.max=cfg.max;el.step=cfg.step;el.value=arr[k-1];$("t"+k+"v").textContent=arr[k-1]+(S.mode==="rel"?"%":"%")});
 }
 let rbT=0; function rebuildSoon(){clearTimeout(rbT);rbT=setTimeout(rebuild,120)}
+function renderMyPlaces(){
+  const el=$("myPlaces");
+  el.innerHTML=S.extraCities.map((c,i)=>`<span class="chip">${c[0].replace(/</g,"&lt;")}<button data-i="${i}" aria-label="Remove ${c[0].replace(/"/g,"&quot;")}">×</button></span>`).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{const c=S.extraCities[+b.dataset.i];S.extraCities.splice(+b.dataset.i,1);S.manual=S.manual.filter(n=>n!==c[0]);save();renderMyPlaces();scheduleOverlay()});
+}
 function renderCityList(){
   const el=$("cityList"), sig=S.cityMode+"|"+G.picked.join(",")+"|"+S.manual.join(",")+"|"+S.extraCities.length;
   if(el.dataset.sig===sig) return; el.dataset.sig=sig;
@@ -875,15 +935,18 @@ function bind(){
   rng("minArea","minArea",v=>v?v+"k":"off",rebuildSoon);
   rng("opac","opac",v=>v+"%",applyLook);
   rng("labScale","labScale",v=>v+"%",scheduleOverlay);
+  rng("lineW","lineW",v=>v+"%",applyLook);
+  $("stateC").addEventListener("input",()=>{S.stateColor=$("stateC").value;save();applyLook()});
+  $("coastC").addEventListener("input",()=>{S.coastColor=$("coastC").value;save();applyLook()});
+  $("lineReset").onclick=()=>{S.stateColor=null;S.coastColor=null;S.lineW=100;$("lineW").value=100;$("lineWv").textContent="100%";save();applyLook()};
   rng("headScale","headScale",v=>v+"%",()=>{scheduleOverlay();if(autoFit)setView("fit",true)});
   rng("maxLab","maxLab",v=>v,scheduleOverlay);
-  rng("logoSize","logoSize",v=>v,scheduleOverlay);
   const sz=$("size"); sz.innerHTML=SIZES.map(([v,l])=>`<option value="${v}">${l}</option>`).join(""); sz.value=S.size;
   $("cw").value=S.cw; $("ch").value=S.ch; $("customRow").hidden=S.size!=="custom";
   const sizeChanged=()=>{$("customRow").hidden=S.size!=="custom";save();layoutStage();requestAnimationFrame(()=>{autoFit=true;setView("fit",true);scheduleOverlay()})};
   sz.onchange=()=>{S.size=sz.value;sizeChanged()};
   ["cw","ch"].forEach(id=>$(id).onchange=()=>{S[id]=Math.max(320,Math.min(4096,Math.round(+$(id).value)||1080));$(id).value=S[id];sizeChanged()});
-  seg("baseSeg","base",applyLook); seg("projSeg","proj",applyLook); seg("headSeg","head",scheduleOverlay); seg("labSeg","lab",scheduleOverlay);
+  seg("baseSeg","base",()=>{S.stateColor=null;S.coastColor=null;save();applyLook()}); seg("projSeg","proj",applyLook); seg("headSeg","head",scheduleOverlay); seg("labSeg","lab",scheduleOverlay);
   seg("cityModeSeg","cityMode",()=>{if(S.cityMode==="manual"&&!S.manual.length)S.manual=G.picked.slice();$("maxLabRow").hidden=S.cityMode!=="auto";save();scheduleOverlay()});
   $("maxLabRow").hidden=S.cityMode!=="auto";
   $("space").checked=S.space; $("space").onchange=()=>{S.space=$("space").checked;save();drawStars()};
@@ -903,25 +966,40 @@ function bind(){
     if(S.cityMode!=="manual"){S.cityMode="manual";S.manual=G.picked.slice();document.querySelector('#cityModeSeg [data-v="manual"]').click()}
     S.manual=e.target.checked?[...new Set(S.manual.concat(n))]:S.manual.filter(x=>x!==n); save(); scheduleOverlay();
   });
-  $("addCityBtn").onclick=()=>{
-    const p=$("addCity").value.split(",").map(s=>s.trim()); const lon=+p.pop(), lat=+p.pop(), name=p.join(", ");
-    if(!name||!isFinite(lat)||!isFinite(lon)||lat<15||lat>60||lon>-50||lon<-170){$("addCity").setCustomValidity("Use: Name, lat, lon (west longitude negative)");$("addCity").reportValidity();return}
-    $("addCity").setCustomValidity(""); S.extraCities.push([name,lat,lon,1]); if(S.cityMode==="manual")S.manual.push(name); $("addCity").value=""; save(); scheduleOverlay();
+  const addPlace=(name,lat,lon)=>{
+    S.extraCities=S.extraCities.filter(c=>c[0]!==name).concat([[name,+lat,+lon,0]]);
+    if(!S.manual.includes(name))S.manual.push(name);
+    $("addCity").value=""; $("geoResults").innerHTML=""; save(); renderMyPlaces(); scheduleOverlay();
   };
+  const findPlace=async()=>{
+    const q=$("addCity").value.trim(); if(!q) return; const box=$("geoResults");
+    // "Name, lat, lon" still works for exact spots
+    const p=q.split(",").map(x=>x.trim());
+    if(p.length>=3&&isFinite(+p[p.length-1])&&isFinite(+p[p.length-2])){addPlace(p.slice(0,-2).join(", "),+p[p.length-2],+p[p.length-1]);return}
+    box.innerHTML='<p class="hint">Searching…</p>';
+    try{
+      const r=await fetchT("https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=us,ca,mx&limit=6&q="+encodeURIComponent(q),12000);
+      const js=await r.json();
+      if(!js.length){box.innerHTML='<p class="hint">No match. Try adding the state, like "Moore, OK".</p>';return}
+      const label=p[0];
+      box.innerHTML=js.map((g,i)=>`<button data-i="${i}">${g.display_name.replace(/</g,"&lt;")}</button>`).join("");
+      box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const g=js[+b.dataset.i];addPlace(label.charAt(0).toUpperCase()+label.slice(1),g.lat,g.lon)});
+    }catch(e){box.innerHTML='<p class="hint">Search is unavailable right now. You can type "Name, lat, lon" instead.</p>'}
+  };
+  $("addCityBtn").onclick=findPlace;
+  $("addCity").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();findPlace()}});
+  renderMyPlaces();
   $("loadBtn").onclick=()=>$("fileIn").click();
   $("fileIn").onchange=()=>{const f=$("fileIn").files[0];if(f)loadFile(f);$("fileIn").value=""};
   $("clearBtn").onclick=async()=>{await IDB.del("spc2");await tryAutoLoad()};
-  $("logoBtn").onclick=()=>$("logoIn").click();
-  $("logoIn").onchange=()=>{const f=$("logoIn").files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.logo=r.result;save();setLogo()};r.readAsDataURL(f);$("logoIn").value=""};
-  $("logoClear").onclick=()=>{S.logo=null;logoImg=null;save();scheduleOverlay()};
   $("exportBtn").onclick=exportOne; $("exportAllBtn").onclick=exportAll;
   let dragN=0;
   addEventListener("dragenter",e=>{if([...e.dataTransfer.types].includes("Files")){dragN++;$("drop").hidden=false}});
   addEventListener("dragleave",()=>{if(--dragN<=0){dragN=0;$("drop").hidden=true}});
   addEventListener("dragover",e=>e.preventDefault());
-  addEventListener("drop",e=>{e.preventDefault();dragN=0;$("drop").hidden=true;const f=e.dataTransfer.files[0];if(f){/image/.test(f.type)?($("logoIn").files=e.dataTransfer.files,$("logoIn").onchange()):loadFile(f)}});
+  addEventListener("drop",e=>{e.preventDefault();dragN=0;$("drop").hidden=true;const f=e.dataTransfer.files[0];if(f&&!/image/.test(f.type))loadFile(f)});
 }
-function setLogo(){if(!S.logo){logoImg=null;return}const im=new Image();im.onload=()=>{logoImg=im;scheduleOverlay()};im.src=S.logo}
+function setLogo(){S.logo=null;if(!S.logo){logoImg=null;return}const im=new Image();im.onload=()=>{logoImg=im;scheduleOverlay()};im.src=S.logo}
 
 /* ============================== boot ============================== */
 function blocked(){
